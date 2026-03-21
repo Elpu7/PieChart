@@ -1,4 +1,10 @@
 {
-  "key.category.toggleable_piechart": "Pie chart",
-  "key.toggle_piechart": "Pie chart toggle"
+  "key.category.piechart": "Piechart",
+  "key.piechart.toggle_debug_profiler": "Toggle Debug Profiler",
+  "key.piechart.open_editor": "Open Piechart Editor",
+  "screen.piechart.edit_mode": "Piechart Edit Mode",
+  "screen.piechart.instructions": "Drag the preview to move it. Use the slider or mouse wheel over the preview to change scale.",
+  "screen.piechart.scale": "Scale: %s",
+  "screen.piechart.reset": "Reset",
+  "screen.piechart.done": "Done"
 }

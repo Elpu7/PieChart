@@ -4,6 +4,10 @@
   "package": "dev.elpu7.piechart.mixin.client",
   "compatibilityLevel": "JAVA_21",
   "client": [
+    "DebugHudMixin",
+    "InGameHudMixin",
+    "PieChartMixin",
+    "ProfilerChartGuiElementRenderStateMixin"
   ],
   "injectors": {
     "defaultRequire": 1

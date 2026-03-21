@@ -3,9 +3,9 @@
   "id": "piechart",
   "version": "${version}",
 
-  "name": "Piechart",
-  "description": "Mod that allows you to toggle piechart",
-  "authors": [],
+  "name": "PieChart",
+  "description": "Mod that allows you to toggle pie chart",
+  "authors": ["Elpu7"],
   "contact": {},
 
   "license": "MIT",
