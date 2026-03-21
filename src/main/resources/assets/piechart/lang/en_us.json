@@ -1,5 +1,6 @@
 {
   "key.category.piechart": "Piechart",
+  "key.category.piechart.piechart": "Piechart",
   "key.piechart.toggle_debug_profiler": "Toggle Debug Profiler",
   "key.piechart.open_editor": "Open Piechart Editor",
   "screen.piechart.edit_mode": "Piechart Edit Mode",
