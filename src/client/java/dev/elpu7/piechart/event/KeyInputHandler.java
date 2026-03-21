@@ -22,13 +22,13 @@ public class KeyInputHandler {
         toggleDebugProfilerKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 TOGGLE_DEBUG_PROFILER_KEY,
                 InputUtil.Type.KEYSYM,
-                GLFW.GLFW_KEY_UNKNOWN,
+                GLFW.GLFW_KEY_F8,
                 KEY_CATEGORY
         ));
         openEditModeKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 OPEN_EDIT_MODE_KEY,
                 InputUtil.Type.KEYSYM,
-                GLFW.GLFW_KEY_UNKNOWN,
+                GLFW.GLFW_KEY_F7,
                 KEY_CATEGORY
         ));
 

@@ -3,8 +3,15 @@
   "key.piechart.toggle_debug_profiler": "Toggle Debug Profiler",
   "key.piechart.open_editor": "Open Piechart Editor",
   "screen.piechart.edit_mode": "Piechart Edit Mode",
-  "screen.piechart.instructions": "Drag the preview to move it. Use the slider or mouse wheel over the preview to change scale.",
-  "screen.piechart.scale": "Scale: %s",
+  "screen.piechart.subtitle": "Adjust position and scale live",
+  "screen.piechart.instructions": "Use the preview on the right as your live canvas. Drag the chart to move it, then fine tune the scale with the slider or mouse wheel.",
+  "screen.piechart.preview": "Live Preview",
+  "screen.piechart.scale_slider": "Scale Slider: %s",
+  "screen.piechart.scale_value": "Current scale: %s",
+  "screen.piechart.offset_x": "Offset X: %s",
+  "screen.piechart.offset_y": "Offset Y: %s",
+  "screen.piechart.hint_drag": "Drag inside preview to move",
+  "screen.piechart.hint_scroll": "Scroll inside preview to scale",
   "screen.piechart.reset": "Reset",
   "screen.piechart.done": "Done"
 }

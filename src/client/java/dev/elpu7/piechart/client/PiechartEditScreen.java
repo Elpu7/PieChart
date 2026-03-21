@@ -9,8 +9,11 @@ import net.minecraft.client.gui.widget.SliderWidget;
 import net.minecraft.text.Text;
 
 public class PiechartEditScreen extends Screen {
-    private static final int PANEL_WIDTH = 180;
-    private static final int PREVIEW_PADDING = 8;
+    private static final int PANEL_X = 18;
+    private static final int PANEL_Y = 18;
+    private static final int PANEL_WIDTH = 216;
+    private static final int PREVIEW_PADDING = 12;
+    private static final int PANEL_BOTTOM_MARGIN = 18;
 
     private final Screen parent;
     private final PiechartConfig config;
@@ -28,55 +31,135 @@ public class PiechartEditScreen extends Screen {
 
     @Override
     protected void init() {
-        int panelX = 16;
+        int contentX = PANEL_X + PREVIEW_PADDING;
         int buttonWidth = PANEL_WIDTH - PREVIEW_PADDING * 2;
-        int y = 40;
+        int halfButtonWidth = (buttonWidth - 8) / 2;
+        int y = PANEL_Y + 44;
 
-        scaleSlider = addDrawableChild(new ScaleSliderWidget(panelX + PREVIEW_PADDING, y, buttonWidth, 20, config));
-        y += 28;
+        scaleSlider = addDrawableChild(new ScaleSliderWidget(contentX, y, buttonWidth, 20, config));
+        y += 112;
 
         addDrawableChild(ButtonWidget.builder(Text.translatable("screen.piechart.reset"), button -> {
             config.reset();
             scaleSlider.syncFromConfig();
-        }).dimensions(panelX + PREVIEW_PADDING, y, buttonWidth, 20).build());
-        y += 28;
+        }).dimensions(contentX, y, halfButtonWidth, 20).build());
 
         addDrawableChild(ButtonWidget.builder(Text.translatable("screen.piechart.done"), button -> close())
-                .dimensions(panelX + PREVIEW_PADDING, y, buttonWidth, 20)
+                .dimensions(contentX + halfButtonWidth + 8, y, halfButtonWidth, 20)
                 .build());
     }
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
-        context.fill(0, 0, this.width, this.height, 0x88070B12);
+        renderBackdrop(context);
+        renderSidePanel(context);
+        renderPreviewSurface(context);
+        super.render(context, mouseX, mouseY, deltaTicks);
+        PiechartRenderer.renderConfiguredPieChart(MinecraftClient.getInstance(), context);
+        renderPreviewOutline(context);
+        renderValueReadout(context);
+    }
 
-        context.fill(12, 12, 12 + PANEL_WIDTH, this.height - 12, 0xAA101218);
-        context.drawTextWithShadow(this.textRenderer, this.title, 24, 20, 0xFFFFFF);
+    private void renderBackdrop(DrawContext context) {
+        context.fillGradient(0, 0, this.width, this.height, 0xC20A1118, 0xC2141E1D);
+    }
+
+    private void renderSidePanel(DrawContext context) {
+        int panelBottom = this.height - PANEL_BOTTOM_MARGIN;
+        int panelRight = PANEL_X + PANEL_WIDTH;
+
+        context.fill(PANEL_X, PANEL_Y, panelRight, panelBottom, 0xCC11161D);
+        context.drawStrokedRectangle(PANEL_X, PANEL_Y, PANEL_WIDTH, panelBottom - PANEL_Y, 0xFFAF9D72);
+
+        context.drawTextWithShadow(this.textRenderer, this.title, PANEL_X + PREVIEW_PADDING, PANEL_Y + 12, 0xFFF5E7BD);
+        context.drawTextWithShadow(
+                this.textRenderer,
+                Text.translatable("screen.piechart.subtitle"),
+                PANEL_X + PREVIEW_PADDING,
+                PANEL_Y + 26,
+                0xFF9FB4C8
+        );
         context.drawWrappedTextWithShadow(
                 this.textRenderer,
                 Text.translatable("screen.piechart.instructions"),
-                24,
-                100,
-                PANEL_WIDTH - 24,
-                0xB8C4D4
+                PANEL_X + PREVIEW_PADDING,
+                PANEL_Y + 78,
+                PANEL_WIDTH - PREVIEW_PADDING * 2,
+                0xFFD6E0EA
         );
+    }
 
-        super.render(context, mouseX, mouseY, deltaTicks);
+    private void renderPreviewSurface(DrawContext context) {
+        int x = getPreviewX() - 30;
+        int y = getPreviewY() - 30;
+        int width = (int) Math.round(PiechartRenderer.BASE_WIDTH * config.getScale()) + 60;
+        int height = (int) Math.round(PiechartRenderer.BASE_HEIGHT * config.getScale()) + 60;
 
-        PiechartRenderer.renderConfiguredPieChart(MinecraftClient.getInstance(), context);
-        renderPreviewOutline(context);
+        context.fill(x, y, x + width, y + height, 0x442A3640);
+        context.drawStrokedRectangle(x, y, width, height, 0x557E95A8);
+
+        int centerX = x + width / 2;
+        int centerY = y + height / 2;
+        context.drawVerticalLine(centerX, y + 14, y + height - 14, 0x336D8192);
+        context.drawHorizontalLine(x + 14, x + width - 14, centerY, 0x336D8192);
+        context.drawTextWithShadow(
+                this.textRenderer,
+                Text.translatable("screen.piechart.preview"),
+                x + 10,
+                y + 10,
+                0xFFD8E5F0
+        );
     }
 
     private void renderPreviewOutline(DrawContext context) {
-        PiechartConfig currentConfig = PiechartConfig.getInstance();
-        int baseX = context.getScaledWindowWidth() - 220;
-        int baseY = context.getScaledWindowHeight() - 170;
-        int previewX = baseX + (int) Math.round(currentConfig.getOffsetX());
-        int previewY = baseY + (int) Math.round(currentConfig.getOffsetY());
-        int previewWidth = (int) Math.round(PiechartRenderer.BASE_WIDTH * currentConfig.getScale());
-        int previewHeight = (int) Math.round(PiechartRenderer.BASE_HEIGHT * currentConfig.getScale());
+        int previewX = getPreviewX();
+        int previewY = getPreviewY();
+        int previewWidth = getPreviewWidth();
+        int previewHeight = getPreviewHeight();
+        int outlineColor = draggingChart ? 0xFFFFE39A : 0xFFE8D8A8;
 
-        context.drawStrokedRectangle(previewX - 2, previewY - 2, previewWidth + 4, previewHeight + 4, 0xFFE8D8A8);
+        context.drawStrokedRectangle(previewX - 2, previewY - 2, previewWidth + 4, previewHeight + 4, outlineColor);
+    }
+
+    private void renderValueReadout(DrawContext context) {
+        int x = PANEL_X + PREVIEW_PADDING;
+        int y = PANEL_Y + 124;
+
+        context.drawTextWithShadow(
+                this.textRenderer,
+                Text.translatable("screen.piechart.scale_value", String.format("%.2fx", config.getScale())),
+                x,
+                y,
+                0xFFF0F4F8
+        );
+        context.drawTextWithShadow(
+                this.textRenderer,
+                Text.translatable("screen.piechart.offset_x", (int) Math.round(config.getOffsetX())),
+                x,
+                y + 16,
+                0xFFBBD0E2
+        );
+        context.drawTextWithShadow(
+                this.textRenderer,
+                Text.translatable("screen.piechart.offset_y", (int) Math.round(config.getOffsetY())),
+                x,
+                y + 32,
+                0xFFBBD0E2
+        );
+        context.drawTextWithShadow(
+                this.textRenderer,
+                Text.translatable("screen.piechart.hint_drag"),
+                x,
+                y + 56,
+                0xFFE3C98F
+        );
+        context.drawTextWithShadow(
+                this.textRenderer,
+                Text.translatable("screen.piechart.hint_scroll"),
+                x,
+                y + 70,
+                0xFFE3C98F
+        );
     }
 
     @Override
@@ -114,8 +197,8 @@ public class PiechartEditScreen extends Screen {
         return super.mouseReleased(click);
     }
 
-        @Override
-        public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
         if (isInsidePreview(mouseX, mouseY)) {
             config.setScale(config.getScale() + verticalAmount * 0.1);
             scaleSlider.syncFromConfig();
@@ -135,6 +218,24 @@ public class PiechartEditScreen extends Screen {
 
         return mouseX >= previewX && mouseX <= previewX + previewWidth
                 && mouseY >= previewY && mouseY <= previewY + previewHeight;
+    }
+
+    private int getPreviewX() {
+        int baseX = this.width - 220;
+        return baseX + (int) Math.round(config.getOffsetX());
+    }
+
+    private int getPreviewY() {
+        int baseY = this.height - 170;
+        return baseY + (int) Math.round(config.getOffsetY());
+    }
+
+    private int getPreviewWidth() {
+        return (int) Math.round(PiechartRenderer.BASE_WIDTH * config.getScale());
+    }
+
+    private int getPreviewHeight() {
+        return (int) Math.round(PiechartRenderer.BASE_HEIGHT * config.getScale());
     }
 
     @Override
@@ -167,7 +268,7 @@ public class PiechartEditScreen extends Screen {
 
         @Override
         protected void updateMessage() {
-            setMessage(Text.translatable("screen.piechart.scale", String.format("%.2fx", config.getScale())));
+            setMessage(Text.translatable("screen.piechart.scale_slider", String.format("%.2fx", config.getScale())));
         }
 
         @Override

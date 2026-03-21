@@ -4,6 +4,7 @@
   "package": "dev.elpu7.piechart.mixin.client",
   "compatibilityLevel": "JAVA_21",
   "client": [
+    "DebugHudAccessor",
     "DebugHudMixin",
     "InGameHudMixin",
     "PieChartMixin",

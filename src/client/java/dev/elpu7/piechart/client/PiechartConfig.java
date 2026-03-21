@@ -84,7 +84,7 @@ public final class PiechartConfig {
     }
 
     public void setScale(double scale) {
-        this.scale = scale;
+        this.scale = Math.clamp(scale, MIN_SCALE, MAX_SCALE);
     }
 
     public void reset() {

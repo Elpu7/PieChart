@@ -4,9 +4,13 @@
   "version": "${version}",
 
   "name": "PieChart",
-  "description": "Mod that allows you to toggle pie chart",
+  "description": "Mod that allows you to toggle and edit pie chart.",
   "authors": ["Elpu7"],
-  "contact": {},
+  "contact": {
+    "homepage": "https://modrinth.com/project/piechart",
+    "issues": "https://github.com/Elpu7/PieChart/issues",
+    "sources": "https://github.com/Elpu7/PieChart"
+  },
 
   "license": "MIT",
   "icon": "assets/piechart/icon.png",

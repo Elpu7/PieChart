@@ -1,5 +1,6 @@
 package dev.elpu7.piechart.mixin.client;
 
+import dev.elpu7.piechart.client.PiechartEditScreen;
 import dev.elpu7.piechart.client.PiechartState;
 import dev.elpu7.piechart.client.PiechartRenderer;
 import net.minecraft.client.MinecraftClient;
@@ -21,7 +22,14 @@ public abstract class InGameHudMixin {
 
     @Inject(method = "render", at = @At("TAIL"))
     private void piechart$renderPieChartOnly(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
-        if (PiechartState.isModKeyPieChartVisible()) {
+        boolean f3Enabled = client.debugHudEntryList.isF3Enabled();
+        boolean vanillaPieChartVisible = f3Enabled
+                && ((DebugHudAccessor) client.getDebugHud()).piechart$isRenderingChartVisible();
+
+        if (PiechartState.isModKeyPieChartVisible()
+                && !(client.currentScreen instanceof PiechartEditScreen)
+                && !f3Enabled
+                && !vanillaPieChartVisible) {
             PiechartRenderer.renderConfiguredPieChart(client, context);
         }
     }
