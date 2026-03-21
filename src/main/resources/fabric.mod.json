@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "id": "piechart",
+  "version": "${version}",
+
+  "name": "Piechart",
+  "description": "Mod that allows you to toggle piechart",
+  "authors": [],
+  "contact": {},
+
+  "license": "MIT",
+  "icon": "assets/piechart/icon.png",
+
+  "environment": "client",
+  "entrypoints": {
+    "client": ["dev.elpu7.piechart.client.PiechartClient"],
+    "main": ["dev.elpu7.piechart.Piechart"]
+  },
+
+  "mixins": [
+    "piechart.mixins.json"
+    ,{
+      "config": "piechart.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric-api": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}
