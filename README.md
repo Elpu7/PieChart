@@ -17,7 +17,7 @@ It also includes an editor mode where you can move and scale the pie chart on sc
 
 ## Requirements
 
-- Minecraft `1.21.11`
+- Minecraft `26.1`
 - Fabric Loader
 - Fabric API
 
