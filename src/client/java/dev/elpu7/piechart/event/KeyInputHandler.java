@@ -1,33 +1,33 @@
 package dev.elpu7.piechart.event;
 
-import dev.elpu7.piechart.client.PiechartState;
 import dev.elpu7.piechart.client.PiechartEditScreen;
+import dev.elpu7.piechart.client.PiechartState;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.util.InputUtil;
-import net.minecraft.util.Identifier;
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
+import net.minecraft.resources.Identifier;
+import com.mojang.blaze3d.platform.InputConstants;
 import org.lwjgl.glfw.GLFW;
 
 public class KeyInputHandler {
-    private static final KeyBinding.Category KEY_CATEGORY = KeyBinding.Category.create(Identifier.of("piechart", "piechart"));
+    private static final KeyMapping.Category KEY_CATEGORY = KeyMapping.Category.register(Identifier.fromNamespaceAndPath("piechart", "piechart"));
     private static final String TOGGLE_DEBUG_PROFILER_KEY = "key.piechart.toggle_debug_profiler";
     private static final String OPEN_EDIT_MODE_KEY = "key.piechart.open_editor";
 
-    private static KeyBinding toggleDebugProfilerKey;
-    private static KeyBinding openEditModeKey;
+    private static KeyMapping toggleDebugProfilerKey;
+    private static KeyMapping openEditModeKey;
 
     public static void register() {
-        toggleDebugProfilerKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+        toggleDebugProfilerKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 TOGGLE_DEBUG_PROFILER_KEY,
-                InputUtil.Type.KEYSYM,
+                InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_F8,
                 KEY_CATEGORY
         ));
-        openEditModeKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+        openEditModeKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 OPEN_EDIT_MODE_KEY,
-                InputUtil.Type.KEYSYM,
+                InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_F7,
                 KEY_CATEGORY
         ));
@@ -35,23 +35,23 @@ public class KeyInputHandler {
         ClientTickEvents.END_CLIENT_TICK.register(KeyInputHandler::onEndTick);
     }
 
-    private static void onEndTick(MinecraftClient client) {
-        if (client.world == null || client.player == null) {
+    private static void onEndTick(Minecraft client) {
+        if (client.level == null || client.player == null) {
             PiechartState.hide();
-            client.getDebugHud().getPieChart().setProfileResult(null);
+            client.getDebugOverlay().getProfilerPieChart().setPieChartResults(null);
             return;
         }
 
-        while (toggleDebugProfilerKey.wasPressed()) {
+        while (toggleDebugProfilerKey.consumeClick()) {
             PiechartState.toggleModKeyPieChart();
 
             if (!PiechartState.isModKeyPieChartVisible()) {
-                client.getDebugHud().getPieChart().setProfileResult(null);
+                client.getDebugOverlay().getProfilerPieChart().setPieChartResults(null);
             }
         }
 
-        while (openEditModeKey.wasPressed()) {
-            client.setScreen(new PiechartEditScreen(client.currentScreen));
+        while (openEditModeKey.consumeClick()) {
+            client.setScreen(new PiechartEditScreen(client.screen));
         }
     }
 }

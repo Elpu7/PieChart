@@ -6,13 +6,13 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArgs;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
-@Mixin(net.minecraft.client.gui.hud.debug.chart.PieChart.class)
+@Mixin(net.minecraft.client.gui.components.debugchart.ProfilerPieChart.class)
 public abstract class PieChartMixin {
     @ModifyArgs(
-            method = "render",
+            method = "extractRenderState",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/client/gui/DrawContext;addProfilerChart(Ljava/util/List;IIII)V"
+                    target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;profilerChart(Ljava/util/List;IIII)V"
             )
     )
     private void piechart$scaleProfilerChart(Args args) {
