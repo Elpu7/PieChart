@@ -51,7 +51,7 @@ public class KeyInputHandler {
         }
 
         while (openEditModeKey.consumeClick()) {
-            client.setScreen(new PiechartEditScreen(client.screen));
+            client.setScreenAndShow(new PiechartEditScreen(client.gui.screen()));
         }
     }
 }
