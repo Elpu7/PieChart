@@ -241,7 +241,7 @@ public class PiechartEditScreen extends Screen {
     @Override
     public void onClose() {
         config.save();
-        Minecraft.getInstance().setScreen(parent);
+        Minecraft.getInstance().setScreenAndShow(parent);
     }
 
     private static final class ScaleSliderWidget extends AbstractSliderButton {
