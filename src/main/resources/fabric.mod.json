@@ -4,7 +4,7 @@
   "version": "${version}",
 
   "name": "PieChart",
-  "description": "Mod that allows you to toggle and edit pie chart.",
+  "description": "Toggle and edit the Pie Chart.",
   "authors": ["Elpu7"],
   "contact": {
     "homepage": "https://modrinth.com/project/piechart",

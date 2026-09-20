@@ -19,13 +19,14 @@ public final class PiechartRenderer {
         float translatedX = baseX + (float) config.getOffsetX();
         float translatedY = baseY + (float) config.getOffsetY();
 
-        PiechartRenderContext.begin(baseX, baseY, translatedX, translatedY, scale);
         graphics.pose().pushMatrix();
-        graphics.pose().translate(translatedX, translatedY);
-        graphics.pose().scale(scale, scale);
-        graphics.pose().translate(-baseX, -baseY);
-        client.getDebugOverlay().getProfilerPieChart().extractRenderState(graphics);
-        graphics.pose().popMatrix();
-        PiechartRenderContext.end();
+        try {
+            graphics.pose().translate(translatedX, translatedY);
+            graphics.pose().scale(scale, scale);
+            graphics.pose().translate(-baseX, -baseY);
+            client.getDebugOverlay().getProfilerPieChart().extractRenderState(graphics, graphics.guiWidth(), graphics.guiHeight());
+        } finally {
+            graphics.pose().popMatrix();
+        }
     }
 }

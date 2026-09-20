@@ -5,9 +5,7 @@
   "compatibilityLevel": "JAVA_25",
   "client": [
     "DebugHudMixin",
-    "InGameHudMixin",
-    "PieChartMixin",
-    "ProfilerChartGuiElementRenderStateMixin"
+    "InGameHudMixin"
   ],
   "injectors": {
     "defaultRequire": 1

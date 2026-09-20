@@ -30,12 +30,12 @@ public abstract class DebugHudMixin {
             method = "extractRenderState",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/client/gui/components/debugchart/ProfilerPieChart;extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;)V"
+                    target = "Lnet/minecraft/client/gui/components/debugchart/ProfilerPieChart;extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;II)V"
             )
     )
-    private void piechart$skipVanillaPieChartRender(ProfilerPieChart pieChart, GuiGraphicsExtractor graphics) {
+    private void piechart$skipVanillaPieChartRender(ProfilerPieChart pieChart, GuiGraphicsExtractor graphics, int width, int height) {
         if (!PiechartState.isModKeyPieChartVisible()) {
-            pieChart.extractRenderState(graphics);
+            pieChart.extractRenderState(graphics, width, height);
         }
     }
 }

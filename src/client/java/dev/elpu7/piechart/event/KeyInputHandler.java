@@ -8,7 +8,6 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
 import com.mojang.blaze3d.platform.InputConstants;
-import org.lwjgl.glfw.GLFW;
 
 public class KeyInputHandler {
     private static final KeyMapping.Category KEY_CATEGORY = KeyMapping.Category.register(Identifier.fromNamespaceAndPath("piechart", "piechart"));
@@ -21,14 +20,14 @@ public class KeyInputHandler {
     public static void register() {
         toggleDebugProfilerKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 TOGGLE_DEBUG_PROFILER_KEY,
-                InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_F8,
+                InputConstants.Type.KEYBOARD,
+                InputConstants.KEY_F8,
                 KEY_CATEGORY
         ));
         openEditModeKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 OPEN_EDIT_MODE_KEY,
-                InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_F7,
+                InputConstants.Type.KEYBOARD,
+                InputConstants.KEY_F7,
                 KEY_CATEGORY
         ));
 
