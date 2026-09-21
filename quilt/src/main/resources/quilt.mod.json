@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "quilt_loader": {
+    "group": "dev.elpu7",
+    "id": "piechart",
+    "version": "${version}",
+    "metadata": {
+      "name": "PieChart",
+      "description": "Toggle and edit the Pie Chart.",
+      "contributors": {
+        "Elpu7": "Owner"
+      },
+      "contact": {
+        "homepage": "https://modrinth.com/project/piechart",
+        "issues": "https://github.com/Elpu7/PieChart/issues",
+        "sources": "https://github.com/Elpu7/PieChart"
+      },
+      "license": "MIT",
+      "icon": "assets/piechart/icon.png"
+    },
+    "intermediate_mappings": "net.fabricmc:intermediary",
+    "entrypoints": {
+      "modmenu": "dev.elpu7.piechart.quilt.compat.PiechartModMenu"
+    },
+    "depends": [
+      {
+        "id": "quilt_loader",
+        "versions": "${quilt_loader_dependency}"
+      },
+      {
+        "id": "minecraft",
+        "versions": "${minecraft_dependency}"
+      },
+      {
+        "id": "java",
+        "versions": ">=25"
+      }
+    ]
+  },
+  "minecraft": {
+    "environment": "client"
+  },
+  "mixin": [
+    "piechart.client.mixins.json",
+    "piechart.quilt.mixins.json"
+  ]
+}
