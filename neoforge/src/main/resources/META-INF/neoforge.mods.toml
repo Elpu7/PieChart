@@ -21,6 +21,13 @@ ordering="NONE"
 side="CLIENT"
 
 [[dependencies.piechart]]
+modId="elib"
+type="required"
+versionRange="[${elib_version},)"
+ordering="NONE"
+side="CLIENT"
+
+[[dependencies.piechart]]
 modId="minecraft"
 type="required"
 versionRange="${minecraft_version_range}"

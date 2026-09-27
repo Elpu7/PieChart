@@ -2,7 +2,7 @@ package dev.elpu7.piechart.client;
 
 public final class PiechartConfig {
     public static final double MIN_SCALE = 0.35D;
-    public static final double MAX_SCALE = 3.0D;
+    public static final double MAX_SCALE = 2.0D;
     public static final double MIN_OFFSET = -800.0D;
     public static final double MAX_OFFSET = 800.0D;
     public static final double DEFAULT_SCALE = 1.0D;

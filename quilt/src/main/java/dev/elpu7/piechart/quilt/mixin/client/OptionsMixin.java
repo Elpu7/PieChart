@@ -32,7 +32,8 @@ public abstract class OptionsMixin {
         )
     )
     private void piechart$registerKeyMappings(Minecraft minecraft, File gameDirectory, CallbackInfo ci) {
-        PiechartClient.initialize(QuiltLoader.getConfigDir());
+        PiechartClient.initialize(QuiltLoader.getConfigDir(),
+            QuiltLoader.getModContainer("piechart").orElseThrow().metadata().version().raw());
         KeyMapping.Category category = KeyMapping.Category.register(PiechartController.getKeyCategoryId());
         KeyMapping toggleKey = PiechartController.createToggleKey(category);
         KeyMapping editorKey = PiechartController.createEditorKey(category);

@@ -20,7 +20,7 @@ public final class PiechartNeoForgeClient {
     public static final String MOD_ID = "piechart";
 
     public PiechartNeoForgeClient(IEventBus modBus, ModContainer container) {
-        PiechartClient.initialize(FMLPaths.CONFIGDIR.get());
+        PiechartClient.initialize(FMLPaths.CONFIGDIR.get(), container.getModInfo().getVersion().toString());
 
         modBus.addListener(this::registerKeyMappings);
         NeoForge.EVENT_BUS.addListener(this::onEndTick);

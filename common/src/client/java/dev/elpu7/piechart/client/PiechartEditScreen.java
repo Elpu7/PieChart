@@ -1,24 +1,33 @@
 package dev.elpu7.piechart.client;
 
+import com.mojang.blaze3d.platform.InputConstants;
+import dev.elpu7.elib.client.gui.DoubleSliderWidget;
+import dev.elpu7.elib.client.ElibConfigNotifications;
 import java.util.Locale;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 
 public final class PiechartEditScreen extends Screen {
+    private static final int BUTTON_WIDTH = 150;
+    private static final int BUTTON_GAP = 8;
+    private static final int HEADER_HEIGHT = 33;
+    private static final int FOOTER_HEIGHT = 33;
     private static final int PANEL_X = 18;
-    private static final int PANEL_Y = 18;
-    private static final int PANEL_WIDTH = 216;
-    private static final int PREVIEW_PADDING = 12;
-    private static final int PANEL_BOTTOM_MARGIN = 18;
+    private static final int PANEL_PADDING = 12;
+    private static final int PANEL_VERTICAL_MARGIN = 6;
+    private static final int PANEL_WIDTH = BUTTON_WIDTH + PANEL_PADDING * 2;
+    private static final int PREVIEW_SIDE_PADDING = 30;
+    private static final int PREVIEW_HEADER_HEIGHT = 22;
+    private static final int SLIDER_Y = 63;
+    private static final int BORDER_COLOR = 0x77FFFFFF;
 
     private final Screen parent;
     private final PiechartConfig config;
-    private ScaleSliderWidget scaleSlider;
+    private DoubleSliderWidget scaleSlider;
 
     private boolean draggingChart;
     private double dragLastX;
@@ -32,135 +41,105 @@ public final class PiechartEditScreen extends Screen {
 
     @Override
     protected void init() {
-        int contentX = PANEL_X + PREVIEW_PADDING;
-        int buttonWidth = PANEL_WIDTH - PREVIEW_PADDING * 2;
-        int halfButtonWidth = (buttonWidth - 8) / 2;
-        int y = PANEL_Y + 44;
+        keepChartOnScreen();
+        int footerX = footerLeftX();
 
-        scaleSlider = addRenderableWidget(new ScaleSliderWidget(contentX, y, buttonWidth, 20, config));
-        int buttonY = this.height - PANEL_BOTTOM_MARGIN - 20 - 12;
+        scaleSlider = addRenderableWidget(new DoubleSliderWidget(
+            PANEL_X + PANEL_PADDING,
+            sliderY(),
+            BUTTON_WIDTH,
+            20,
+            PiechartConfig.MIN_SCALE,
+            Math.max(PiechartConfig.MIN_SCALE + 0.01D,
+                PiechartRenderer.maxScaleForViewport(this.width, this.height)),
+            0.01D,
+            config.getScale(),
+            value -> Component.translatable("screen.piechart.scale_slider", formatScale(value)),
+            null,
+            this::scaleAroundChartCenter
+        ));
+        int buttonY = footerButtonY();
 
         addRenderableWidget(Button.builder(Component.translatable("screen.piechart.reset"), button -> {
             config.reset();
-            scaleSlider.syncFromConfig();
-        }).bounds(contentX, buttonY, halfButtonWidth, 20).build());
+            keepChartOnScreen();
+            scaleSlider.syncFromValue(config.getScale());
+            ElibConfigNotifications.reset();
+        }).bounds(footerX, buttonY, BUTTON_WIDTH, 20).build());
 
         addRenderableWidget(Button.builder(Component.translatable("screen.piechart.done"), button -> onClose())
-            .bounds(contentX + halfButtonWidth + 8, buttonY, halfButtonWidth, 20)
+            .bounds(footerX + BUTTON_WIDTH + BUTTON_GAP, buttonY, BUTTON_WIDTH, 20)
             .build());
     }
 
     @Override
     public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-        renderBackdrop(graphics);
-        renderSidePanel(graphics);
         renderPreviewSurface(graphics);
-        super.extractRenderState(graphics, mouseX, mouseY, partialTick);
         PiechartRenderer.renderConfiguredPieChart(Minecraft.getInstance(), graphics);
-        renderPreviewOutline(graphics);
-        renderValueReadout(graphics);
+        renderPreviewHeader(graphics);
+        renderControlsText(graphics);
+        super.extractRenderState(graphics, mouseX, mouseY, partialTick);
     }
 
-    private void renderBackdrop(GuiGraphicsExtractor graphics) {
-        graphics.fillGradient(0, 0, this.width, this.height, 0xC20A1118, 0xC2141E1D);
-    }
+    private void renderControlsText(GuiGraphicsExtractor graphics) {
+        int x = PANEL_X + PANEL_PADDING;
+        Component instructions = Component.translatable("screen.piechart.instructions");
+        int instructionsY = sliderY() + 32;
+        int readoutY = instructionsY + this.font.split(instructions, BUTTON_WIDTH).size() * 9 + 12;
+        int panelTop = HEADER_HEIGHT + PANEL_VERTICAL_MARGIN;
+        int panelBottom = this.height - FOOTER_HEIGHT - PANEL_VERTICAL_MARGIN;
 
-    private void renderSidePanel(GuiGraphicsExtractor graphics) {
-        int panelBottom = this.height - PANEL_BOTTOM_MARGIN;
-        int panelRight = PANEL_X + PANEL_WIDTH;
+        graphics.fill(PANEL_X, panelTop, PANEL_X + PANEL_WIDTH, panelBottom, 0x88000000);
+        graphics.outline(PANEL_X, panelTop, PANEL_WIDTH, panelBottom - panelTop, BORDER_COLOR);
+        graphics.centeredText(this.font, this.title, this.width / 2, 10, 0xFFFFFFFF);
+        graphics.textWithWordWrap(this.font, instructions, x, instructionsY, BUTTON_WIDTH, 0xFFE0E0E0);
 
-        graphics.fill(PANEL_X, PANEL_Y, panelRight, panelBottom, 0xCC11161D);
-        graphics.outline(PANEL_X, PANEL_Y, PANEL_WIDTH, panelBottom - PANEL_Y, 0xFFAF9D72);
-
-        graphics.text(this.font, this.title, PANEL_X + PREVIEW_PADDING, PANEL_Y + 12, 0xFFF5E7BD);
-        graphics.text(
-            this.font,
-            Component.translatable("screen.piechart.subtitle"),
-            PANEL_X + PREVIEW_PADDING,
-            PANEL_Y + 26,
-            0xFF9FB4C8
-        );
-        graphics.textWithWordWrap(
-            this.font,
-            Component.translatable("screen.piechart.instructions"),
-            PANEL_X + PREVIEW_PADDING,
-            PANEL_Y + 78,
-            PANEL_WIDTH - PREVIEW_PADDING * 2,
-            0xFFD6E0EA
-        );
+        graphics.text(this.font, Component.translatable("screen.piechart.offset_x",
+            (int)Math.round(config.getOffsetX())), x, readoutY, 0xFFFFFFFF);
+        graphics.text(this.font, Component.translatable("screen.piechart.offset_y",
+            (int)Math.round(config.getOffsetY())), x, readoutY + 16, 0xFFFFFFFF);
     }
 
     private void renderPreviewSurface(GuiGraphicsExtractor graphics) {
-        int x = getPreviewX() - 30;
-        int y = getPreviewY() - 30;
-        int width = (int)Math.round(PiechartRenderer.BASE_WIDTH * config.getScale()) + 60;
-        int height = (int)Math.round(PiechartRenderer.BASE_HEIGHT * config.getScale()) + 60;
+        PreviewBounds bounds = previewBounds();
+        int x = bounds.x();
+        int y = bounds.y();
+        int width = bounds.right() - x;
+        int height = bounds.bottom() - y;
 
-        graphics.fill(x, y, x + width, y + height, 0x442A3640);
-        graphics.outline(x, y, width, height, 0x557E95A8);
+        graphics.fill(x, y, x + width, y + height, 0x88000000);
 
         int centerX = x + width / 2;
         int centerY = y + height / 2;
-        graphics.verticalLine(centerX, y + 14, y + height - 14, 0x336D8192);
-        graphics.horizontalLine(x + 14, x + width - 14, centerY, 0x336D8192);
+        graphics.verticalLine(centerX, y + PREVIEW_HEADER_HEIGHT + 14,
+            y + height - 14, 0x44FFFFFF);
+        graphics.horizontalLine(x + 14, x + width - 14, centerY, 0x44FFFFFF);
+    }
+
+    private void renderPreviewHeader(GuiGraphicsExtractor graphics) {
+        PreviewBounds bounds = previewBounds();
+        graphics.outline(bounds.x(), bounds.y(),
+            bounds.right() - bounds.x(), bounds.bottom() - bounds.y(),
+            draggingChart ? 0xFFFFFFFF : BORDER_COLOR);
         graphics.text(
             this.font,
             Component.translatable("screen.piechart.preview"),
-            x + 10,
-            y + 10,
-            0xFFD8E5F0
+            bounds.x() + 10,
+            bounds.y() + 7,
+            0xFFFFFFFF
         );
     }
 
-    private void renderPreviewOutline(GuiGraphicsExtractor graphics) {
-        int previewX = getPreviewX();
-        int previewY = getPreviewY();
-        int previewWidth = getPreviewWidth();
-        int previewHeight = getPreviewHeight();
-        int outlineColor = draggingChart ? 0xFFFFE39A : 0xFFE8D8A8;
-
-        graphics.outline(previewX - 2, previewY - 2, previewWidth + 4, previewHeight + 4, outlineColor);
+    private int footerLeftX() {
+        return (this.width - BUTTON_WIDTH * 2 - BUTTON_GAP) / 2;
     }
 
-    private void renderValueReadout(GuiGraphicsExtractor graphics) {
-        int x = PANEL_X + PREVIEW_PADDING;
-        int y = PANEL_Y + 124;
+    private int sliderY() {
+        return Math.min(SLIDER_Y, Math.max(38, this.height - 160));
+    }
 
-        graphics.text(
-            this.font,
-            Component.translatable("screen.piechart.scale_value", formatScale(config.getScale())),
-            x,
-            y,
-            0xFFF0F4F8
-        );
-        graphics.text(
-            this.font,
-            Component.translatable("screen.piechart.offset_x", (int)Math.round(config.getOffsetX())),
-            x,
-            y + 16,
-            0xFFBBD0E2
-        );
-        graphics.text(
-            this.font,
-            Component.translatable("screen.piechart.offset_y", (int)Math.round(config.getOffsetY())),
-            x,
-            y + 32,
-            0xFFBBD0E2
-        );
-        graphics.text(
-            this.font,
-            Component.translatable("screen.piechart.hint_drag"),
-            x,
-            y + 56,
-            0xFFE3C98F
-        );
-        graphics.text(
-            this.font,
-            Component.translatable("screen.piechart.hint_scroll"),
-            x,
-            y + 70,
-            0xFFE3C98F
-        );
+    private int footerButtonY() {
+        return this.height - (FOOTER_HEIGHT + 20) / 2;
     }
 
     @Override
@@ -169,7 +148,8 @@ public final class PiechartEditScreen extends Screen {
             return true;
         }
 
-        if (isInsidePreview(event.x(), event.y())) {
+        if (event.button() == InputConstants.MOUSE_BUTTON_LEFT
+            && isInsidePreviewSurface(event.x(), event.y())) {
             draggingChart = true;
             dragLastX = event.x();
             dragLastY = event.y();
@@ -184,6 +164,7 @@ public final class PiechartEditScreen extends Screen {
         if (draggingChart) {
             config.setOffsetX(config.getOffsetX() + event.x() - dragLastX);
             config.setOffsetY(config.getOffsetY() + event.y() - dragLastY);
+            keepChartOnScreen();
             dragLastX = event.x();
             dragLastY = event.y();
             return true;
@@ -200,41 +181,96 @@ public final class PiechartEditScreen extends Screen {
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
-        if (isInsidePreview(mouseX, mouseY)) {
-            config.setScale(config.getScale() + verticalAmount * 0.1D);
-            scaleSlider.syncFromConfig();
+        if (isInsidePreviewSurface(mouseX, mouseY) && verticalAmount != 0.0D) {
+            double newScale = Math.round((currentPlacement().scale() + verticalAmount * 0.05D) * 100.0D) / 100.0D;
+            scaleAround(newScale, mouseX, mouseY);
+            scaleSlider.syncFromValue(config.getScale());
             return true;
         }
 
         return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
     }
 
-    private boolean isInsidePreview(double mouseX, double mouseY) {
-        int previewX = getPreviewX();
-        int previewY = getPreviewY();
-        int previewWidth = getPreviewWidth();
-        int previewHeight = getPreviewHeight();
-
-        return mouseX >= previewX && mouseX <= previewX + previewWidth
-            && mouseY >= previewY && mouseY <= previewY + previewHeight;
+    private boolean isInsidePreviewSurface(double mouseX, double mouseY) {
+        PreviewBounds bounds = previewBounds();
+        return mouseX >= bounds.x() && mouseX < bounds.right()
+            && mouseY >= bounds.y() && mouseY < bounds.bottom();
     }
 
-    private int getPreviewX() {
-        int baseX = this.width - PiechartRenderer.BASE_WIDTH - PiechartRenderer.RIGHT_MARGIN;
-        return baseX + (int)Math.round(config.getOffsetX());
+    private PreviewBounds previewBounds() {
+        PiechartRenderer.Placement placement = currentPlacement();
+        int previewX = previewX(placement);
+        int previewY = previewY(placement);
+        int previewWidth = previewWidth(placement);
+        int previewHeight = previewHeight(placement);
+
+        return new PreviewBounds(
+            Math.max(0, previewX - PREVIEW_SIDE_PADDING),
+            Math.max(0, previewY - previewTopPadding(placement)),
+            Math.min(this.width, previewX + previewWidth + PREVIEW_SIDE_PADDING),
+            Math.min(this.height, previewY + previewHeight + PREVIEW_SIDE_PADDING)
+        );
     }
 
-    private int getPreviewY() {
-        int baseY = this.height - PiechartRenderer.BASE_HEIGHT;
-        return baseY + (int)Math.round(config.getOffsetY());
+    private static int previewTopPadding(PiechartRenderer.Placement placement) {
+        return PREVIEW_HEADER_HEIGHT + 24 + (int)Math.ceil(40.0D * placement.scale());
     }
 
-    private int getPreviewWidth() {
-        return (int)Math.round(PiechartRenderer.BASE_WIDTH * config.getScale());
+    private void scaleAroundChartCenter(double scale) {
+        PiechartRenderer.Placement placement = currentPlacement();
+        scaleAround(scale,
+            placement.x() + PiechartRenderer.BASE_WIDTH * placement.scale() / 2.0D,
+            placement.y() + PiechartRenderer.BASE_HEIGHT * placement.scale() / 2.0D);
     }
 
-    private int getPreviewHeight() {
-        return (int)Math.round(PiechartRenderer.BASE_HEIGHT * config.getScale());
+    private void scaleAround(double requestedScale, double anchorX, double anchorY) {
+        PiechartRenderer.Placement before = currentPlacement();
+        double maxScale = Math.max(PiechartConfig.MIN_SCALE,
+            PiechartRenderer.maxScaleForViewport(this.width, this.height));
+        double scale = Math.clamp(requestedScale, PiechartConfig.MIN_SCALE, maxScale);
+        if (scale == before.scale()) {
+            return;
+        }
+
+        double chartX = (anchorX - before.x()) / before.scale();
+        double chartY = (anchorY - before.y()) / before.scale();
+        config.setScale(scale);
+        config.setOffsetX(anchorX - chartX * scale
+            - (this.width - PiechartRenderer.BASE_WIDTH - PiechartRenderer.RIGHT_MARGIN));
+        config.setOffsetY(anchorY - chartY * scale - (this.height - PiechartRenderer.BASE_HEIGHT));
+        keepChartOnScreen();
+    }
+
+    private void keepChartOnScreen() {
+        PiechartRenderer.Placement placement = currentPlacement();
+        config.setScale(placement.scale());
+        config.setOffsetX(placement.x() - (this.width - PiechartRenderer.BASE_WIDTH - PiechartRenderer.RIGHT_MARGIN));
+        config.setOffsetY(placement.y() - (this.height - PiechartRenderer.BASE_HEIGHT));
+    }
+
+    private PiechartRenderer.Placement currentPlacement() {
+        return PiechartRenderer.placement(config, this.width, this.height);
+    }
+
+    private int previewX(PiechartRenderer.Placement placement) {
+        return Math.clamp((int)Math.round(placement.x()),
+            0, Math.max(0, this.width - previewWidth(placement)));
+    }
+
+    private int previewY(PiechartRenderer.Placement placement) {
+        return Math.clamp((int)Math.round(placement.y()),
+            0, Math.max(0, this.height - previewHeight(placement)));
+    }
+
+    private static int previewWidth(PiechartRenderer.Placement placement) {
+        return (int)Math.ceil(PiechartRenderer.BASE_WIDTH * placement.scale());
+    }
+
+    private static int previewHeight(PiechartRenderer.Placement placement) {
+        return (int)Math.ceil(PiechartRenderer.BASE_HEIGHT * placement.scale());
+    }
+
+    private record PreviewBounds(int x, int y, int right, int bottom) {
     }
 
     @Override
@@ -255,39 +291,5 @@ public final class PiechartEditScreen extends Screen {
 
     private static String formatScale(double scale) {
         return String.format(Locale.ROOT, "%.2fx", scale);
-    }
-
-    private static final class ScaleSliderWidget extends AbstractSliderButton {
-        private final PiechartConfig config;
-
-        private ScaleSliderWidget(int x, int y, int width, int height, PiechartConfig config) {
-            super(x, y, width, height, Component.empty(), toSliderValue(config.getScale()));
-            this.config = config;
-            updateMessage();
-        }
-
-        private static double toSliderValue(double scale) {
-            return (scale - PiechartConfig.MIN_SCALE) / (PiechartConfig.MAX_SCALE - PiechartConfig.MIN_SCALE);
-        }
-
-        private static double fromSliderValue(double value) {
-            return PiechartConfig.MIN_SCALE + value * (PiechartConfig.MAX_SCALE - PiechartConfig.MIN_SCALE);
-        }
-
-        private void syncFromConfig() {
-            this.value = toSliderValue(config.getScale());
-            updateMessage();
-        }
-
-        @Override
-        protected void updateMessage() {
-            setMessage(Component.translatable("screen.piechart.scale_slider", formatScale(config.getScale())));
-        }
-
-        @Override
-        protected void applyValue() {
-            config.setScale(fromSliderValue(this.value));
-            updateMessage();
-        }
     }
 }

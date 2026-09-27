@@ -38,6 +38,10 @@ loom {
 
 repositories {
     maven {
+        name = 'Elpu7'
+        url = 'https://maven.elpu7.dev/releases'
+    }
+    maven {
         name = 'Terraformers'
         url = 'https://maven.terraformersmc.com/'
     }
@@ -48,6 +52,11 @@ dependencies {
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
     implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
+    def localElib = rootProject.file("../Elib/fabric/build/libs/elib-${project.elib_version}-fabric.jar")
+    implementation localElib.exists()
+        ? files(localElib)
+        : "dev.elpu7:elib-fabric:${project.elib_version}"
+
     compileOnly("com.terraformersmc:modmenu:${project.modmenu_version}") {
         transitive = false
     }
@@ -57,13 +66,15 @@ processResources {
     inputs.property 'version', project.version
     inputs.property 'minecraft_dependency', project.minecraft_dependency
     inputs.property 'loader_dependency', project.loader_dependency
+    inputs.property 'elib_version', project.elib_version
     filteringCharset = 'UTF-8'
 
     filesMatching('fabric.mod.json') {
         expand(
             version: project.version,
             minecraft_dependency: project.minecraft_dependency,
-            loader_dependency: project.loader_dependency
+            loader_dependency: project.loader_dependency,
+            elib_version: project.elib_version
         )
     }
 }

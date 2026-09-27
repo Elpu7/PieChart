@@ -11,7 +11,9 @@ import net.minecraft.client.KeyMapping;
 public final class PiechartFabricClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
-        PiechartClient.initialize(FabricLoader.getInstance().getConfigDir());
+        PiechartClient.initialize(FabricLoader.getInstance().getConfigDir(),
+            FabricLoader.getInstance().getModContainer("piechart").orElseThrow()
+                .getMetadata().getVersion().getFriendlyString());
 
         KeyMapping.Category category = KeyMapping.Category.register(PiechartController.getKeyCategoryId());
         KeyMappingHelper.registerKeyMapping(PiechartController.createToggleKey(category));
