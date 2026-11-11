@@ -15,6 +15,7 @@ It also includes an editor mode where you can move and scale the pie chart on sc
 - Drag the pie chart to reposition it
 - Resize the pie chart with live preview
 - Client-side only
+- Localization available through [Elib](https://modrinth.com/mod/elib)
 
 ## Default keybinds
 
